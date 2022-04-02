@@ -18,6 +18,7 @@ def ask_me():
     req_data = request.get_json()
     question = req_data['question_text']
     url = get_question_url(question)
+    print(url)
     content = get_wiki_content(url)
     answer = process(question, content)
 
@@ -26,4 +27,5 @@ def ask_me():
 
 
 def run():
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
+

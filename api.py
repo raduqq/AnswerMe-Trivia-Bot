@@ -1,9 +1,12 @@
 from flask import Flask
 from flask import jsonify
 from flask import request
-from q_url_getter import get_question_url
-from wiki_scraper import get_wiki_content
-from processer import process
+
+from transformers import AutoModelForQuestionAnswering, AutoModelForMultipleChoice, AutoTokenizer
+
+from urls_getter import get_urls
+from scraper import get_urls_context
+from processer import find_answer
 
 app = Flask(__name__)
 
@@ -16,13 +19,36 @@ def sanity_check():
 @app.route('/question', methods=['POST'])
 def ask_me():
     req_data = request.get_json()
-    question = req_data['question_text']
-    url = get_question_url(question)
-    print(url)
-    content = get_wiki_content(url)
-    answer = process(question, content)
+    question_text = req_data['question_text']
+    question_type = req_data['question_type']
+    answer_choices = req_data['answer_choices']
+    answer_type = req_data['answer_type']
 
-    # TODO
+    num_urls = 3
+    urls = get_urls(question_text, num_urls)
+
+    context = get_urls_context(urls)
+
+    # ~18
+    model_name = 'deepset/roberta-base-squad2'
+
+    # ~14
+    # model_name = 'deepset/bert-base-cased-squad2'
+
+    # ~ ; fara truncation setat; foarte lent
+    # model_name = 'deepset/bert-large-uncased-whole-word-masking-squad2'
+
+    # ~18; dureaza prea mult
+    # model_name = 'deepset/roberta-large-squad2'
+
+    dir_ans_model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+    # mult_ch_model = AutoModelForMultipleChoice.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    answer = find_answer(dir_ans_model, tokenizer, question_text, question_type, answer_choices, answer_type, context)
+
+    print(question_text, '---', answer)
+
     return jsonify({'answer': answer}), 200
 
 

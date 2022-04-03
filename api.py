@@ -1,9 +1,12 @@
 from flask import Flask
 from flask import jsonify
 from flask import request
-from q_url_getter import get_question_url
-from wiki_scraper import get_wiki_content
-from processer import process
+
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer
+
+from urls_getter import get_urls
+from scraper import get_urls_context
+from processer import find_answer
 
 app = Flask(__name__)
 
@@ -17,12 +20,21 @@ def sanity_check():
 def ask_me():
     req_data = request.get_json()
     question = req_data['question_text']
-    url = get_question_url(question)
-    print(url)
-    content = get_wiki_content(url)
-    answer = process(question, content)
 
-    # TODO
+    num_urls = 3
+    urls = get_urls(question, num_urls)
+    # for url in urls:
+    #     print(url)
+
+    context = get_urls_context(urls)
+    # print(context)
+
+    model_name = 'deepset/roberta-base-squad2'
+
+    model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    answer = find_answer(model, tokenizer, question, context)
     return jsonify({'answer': answer}), 200
 
 

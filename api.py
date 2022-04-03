@@ -35,6 +35,9 @@ def ask_me():
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     answer = find_answer(model, tokenizer, question, context)
+
+    print(question, '---', answer)
+
     return jsonify({'answer': answer}), 200
 
 

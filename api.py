@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import jsonify
 from flask import request
+from util import MODEL_NAME
 
 from transformers import AutoModelForQuestionAnswering, AutoModelForMultipleChoice, AutoTokenizer
 
@@ -18,37 +19,33 @@ def sanity_check():
 
 @app.route('/question', methods=['POST'])
 def ask_me():
+    # Get JSON
     req_data = request.get_json()
+
+    # Extract data from JSON
     question_text = req_data['question_text']
     question_type = req_data['question_type']
     answer_choices = req_data['answer_choices']
     answer_type = req_data['answer_type']
 
+    # Get relevant URLs from Google Search
     num_urls = 3
     urls = get_urls(question_text, num_urls)
 
+    # Get context by parsing content of URLs
     context = get_urls_context(urls)
 
-    # ~18
-    model_name = 'deepset/roberta-base-squad2'
+    # Setup model for QA
+    dir_ans_model = AutoModelForQuestionAnswering.from_pretrained(MODEL_NAME)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
-    # ~14
-    # model_name = 'deepset/bert-base-cased-squad2'
-
-    # ~ ; fara truncation setat; foarte lent
-    # model_name = 'deepset/bert-large-uncased-whole-word-masking-squad2'
-
-    # ~18; dureaza prea mult
-    # model_name = 'deepset/roberta-large-squad2'
-
-    dir_ans_model = AutoModelForQuestionAnswering.from_pretrained(model_name)
-    # mult_ch_model = AutoModelForMultipleChoice.from_pretrained(model_name)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-
+    # Get Answer
     answer = find_answer(dir_ans_model, tokenizer, question_text, question_type, answer_choices, answer_type, context)
 
+    # ! Debug
     print(question_text, '---', answer)
 
+    # Return successful request status
     return jsonify({'answer': answer}), 200
 
 

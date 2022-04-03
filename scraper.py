@@ -4,17 +4,22 @@ import wikipedia
 
 
 def get_urls_context(urls):
+    # Init context
     context = ''
 
+    # Append context of all URLs
     for url in urls:
         context += get_url_context(url)
 
+    # Return context
     return context
 
 
 def get_url_context(url):
+    # Init content
     content = ""
 
+    # Should we have a Wikipedia page available, we extract its summary
     try:
         tokens = url.split('/')
         query = tokens[len(tokens) - 1]
@@ -22,6 +27,7 @@ def get_url_context(url):
 
         page = wikipedia.page(page_name)
         content = page.summary
+    # Should we not, we just take the first paragraphs of whichever relevant webpage we find
     except:
         # Fetch URL Content
         r = requests.get(url)

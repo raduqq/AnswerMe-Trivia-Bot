@@ -1,3 +1,16 @@
+# ~18
+MODEL_NAME = 'deepset/roberta-base-squad2'
+
+# ~14
+# model_name = 'deepset/bert-base-cased-squad2'
+
+# ~ ; fara truncation setat; foarte lent
+# model_name = 'deepset/bert-large-uncased-whole-word-masking-squad2'
+
+# ~18; dureaza prea mult
+# model_name = 'deepset/roberta-large-squad2'
+
+
 def text2int (textnum, numwords={}):
     if not numwords:
         units = [

@@ -28,11 +28,11 @@ def get_urls(question, num_urls):
     urls = []
 
     # Summarized question
-    # summarized_q = get_essential_words(question)
+    summarized_q = get_essential_words(question)
     # print(summarized_q)
 
     # Get all relevant URLs
-    for curr_url in search(question):
+    for curr_url in search(summarized_q):
         urls.append(curr_url)
 
     chosen_urls = []
